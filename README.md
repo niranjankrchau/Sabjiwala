@@ -1,2 +1,181 @@
-# Sabjiwala
-Subjiwala
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Family Tree</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-card {
+      background-color: #ffffff;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    label {
+      margin-top: 15px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    select,
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #0288d1;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0277bd;
+    }
+
+    #otp-section {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #otp-section.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .info {
+      font-size: 13px;
+      text-align: center;
+      margin-top: 10px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h2>Login</h2>
+
+    <label for="role">Login as:</label>
+    <select id="role">
+      <option value="" disabled selected>Select role</option>
+      <option value="Admin">Admin</option>
+      <option value="customer">Customer</option>
+    </select>
+
+    <label for="username">Name:</label>
+    <input type="text" id="username" placeholder="Enter your name" />
+
+    <label for="mobile">Mobile Number:</label>
+    <input type="tel" id="mobile" placeholder="Enter mobile number" maxlength="10" inputmode="numeric"/>
+
+    <button type="button" onclick="sendOTP()">Send OTP</button>
+
+    <div id="otp-section">
+      <label for="otp">Enter OTP:</label>
+      <input type="text" id="otp" maxlength="6" placeholder="Enter 6-digit OTP" />
+      <button type="button" onclick="verifyOTP()">Verify & Login</button>
+    </div>
+
+    <div class="info">Demo OTP will appear in an alert.</div>
+  </div>
+
+  <script>
+    let generatedOTP = '';
+
+    function sendOTP() {
+      const role = document.getElementById('role').value;
+      const username = document.getElementById('username').value.trim();
+      const mobile = document.getElementById('mobile').value.trim();
+
+      if (!role) {
+        alert('Please select a role.');
+        return;
+      }
+
+      if (!username) {
+        alert('Please enter your name.');
+        return;
+      }
+
+      if (!/^\d{10}$/.test(mobile)) {
+        alert('Enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      // Generate demo OTP
+      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      alert(`Your OTP is: ${generatedOTP}`);
+
+      const otpSection = document.getElementById('otp-section');
+      otpSection.classList.add('visible');
+    }
+
+function verifyOTP() {
+  const role = document.getElementById('role').value;
+  const username = document.getElementById('username').value.trim();
+  const mobile = document.getElementById('mobile').value.trim(); // ✅ FIXED here
+  const otp = document.getElementById('otp').value.trim();
+
+  if (!username) {
+    alert('Please enter your name.');
+    return;
+  }
+  if (!role) {
+    alert('Please select a role.');
+    return;
+  }
+  if (otp !== generatedOTP) {
+    alert('Incorrect OTP.');
+    return;
+  }
+
+  // Save user data and redirect
+  localStorage.setItem('username', username);
+  localStorage.setItem('mobile', mobile); // ✅ FIXED: now it stores the value, not the input element
+
+  if (role === 'Admin') {
+    window.location.href = 'admin.html';
+  } else {
+    window.location.href = 'customer.html';
+  }
+}
+ </script>
+</body>
+</html>
