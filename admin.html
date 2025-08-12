@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2, h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    input[type="text"], input[type="number"], input[type="tel"] {
+      padding: 10px;
+      margin: 5px 10px 15px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 180px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #f0f2f5;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .expired {
+      background-color: #ffe5e5;
+    }
+
+    .near-expiry {
+      background-color: #fffdd0;
+    }
+
+    .active {
+      background-color: #e2ffe2;
+    }
+
+    @media (max-width: 600px) {
+      input, button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 15px;
+      }
+
+      td {
+        padding: 10px;
+        text-align: right;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        text-align: left;
+        font-weight: bold;
+      }
+    
+}
+ .banner {
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      position: relative;
+    }
+
+    .banner h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+    }
+
+    .banner p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .banner .btn {
+      background-color: white;
+      color: #ff6a00;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .banner .btn:hover {
+      background-color: #ffe2d1;
+      color: #d94c00;
+    }
+	td, th {
+  color: #222;
+}
+td[data-label="Shop Name"] button {
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+  </style>
+</head>
+  <body>
+  <div class="login-card">
+  <div class="banner">
+  <h1>Sabjiwala</h1>
+  <p>Apni Local Dukan</p>
+   </div>
+   
+  <div class="header">
+   
+    <h3>Welcome <span id="name"></span></h3>
+    <h2>Search your shop here</h2>
+    <input type="text" id="searchInput" placeholder="Search by name or pincode" />
+    <button onclick="searchShops()">Search</button>
+    <button onclick="renderShops()">Clear</button>
+    <br />
+	 <h2>Add your shop here</h2>
+    <input id="shopName" placeholder="Shop Name" />
+    <input id="address" placeholder="Address" />
+    <input type="text" id="pincode" placeholder="Pincode" maxlength="6" inputmode="numeric" />
+    <button onclick="addShop()">Add Shop</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Shop Name</th>
+        <th>Address</th>
+        <th>Pincode</th>
+        <th>Delete</th>
+        <th>Recharge</th>
+        <th>Validity</th>
+      </tr>
+    </thead>
+    <tbody id="shopTableBody">
+      <!-- Dynamically generated rows go here -->
+    </tbody>
+  </table>
+
+  <script>
+  function getRandomPastelColor() {
+  const hue = Math.floor(Math.random() * 360);
+  return `hsl(${hue}, 70%, 90%)`; // soft pastel color
+}
+
+    const username = localStorage.getItem('username');
+    const mobile = localStorage.getItem('mobile');
+
+    if (!username || !mobile) {
+      alert('Please login first');
+      window.location.href = 'indexnew.html';
+    } else {
+      document.getElementById('name').textContent = username;
+    }
+
+    function generateUUID() {
+      return 'xxxxxxxxyxxxxyxxxyxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        return r.toString(16);
+      });
+    }
+
+    function addShop() {
+  const shopName = document.getElementById('shopName').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const pincode = document.getElementById('pincode').value.trim();
+  
+  if (!/^\d{6}$/.test(pincode)) {
+    alert("Please enter a valid 6-digit pincode.");
+    return;
+  }
+
+  if (!shopName || !address || !pincode) {
+    alert('Fill all fields');
+    return;
+  }
+
+  let userList = JSON.parse(localStorage.getItem("userList")) || [];
+
+  const alreadyExists = userList.some(
+    shop => shop.mobile === mobile && shop.address === address && shop.pincode === pincode
+  );
+
+  if (alreadyExists) {
+    alert("Shop already exists for this user at this location.");
+    return;
+  }
+
+  const shopId = generateUUID();
+
+  userList.push({
+    shopId,
+    mobile,
+    address,
+    pincode,
+    shopName
+  });
+
+  localStorage.setItem("userList", JSON.stringify(userList));
+
+  // Clear inputs
+  document.getElementById('shopName').value = '';
+  document.getElementById('address').value = '';
+  document.getElementById('pincode').value = '';
+  renderShops();
+}
+
+
+    function renderShops() {
+      const tbody = document.getElementById('shopTableBody');
+      tbody.innerHTML = '';
+
+      const userList = JSON.parse(localStorage.getItem('userList') || '[]');
+      const validityList = JSON.parse(localStorage.getItem('validityList') || '{}');
+
+     userList.forEach(user => {
+  const rawValidity = validityList[user.shopId];
+  let validity = "Not Published";
+  let rowClass = '';
+
+  if (rawValidity && rawValidity.includes("Valid till: ")) {
+    const dateStr = rawValidity.split("Valid till: ")[1];
+    const expiry = new Date(dateStr);
+    const today = new Date();
+
+    const expiryDay = new Date(expiry.getFullYear(), expiry.getMonth(), expiry.getDate());
+    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const diff = Math.ceil((expiryDay - todayDay) / (1000 * 60 * 60 * 24));
+
+    if (diff < 0) rowClass = 'expired';
+    else if (diff <= 7) rowClass = 'near-expiry';
+    else rowClass = 'active';
+
+    validity = `Valid till: ${expiry.toLocaleDateString()}`;
+  }
+
+  const tr = document.createElement('tr');
+   tr.className = rowClass;
+   tr.style.backgroundColor = getRandomPastelColor();
+
+  tr.innerHTML = `
+    <td data-label="Shop Name"><button onclick="onlyAdmin('${user.shopId}', '${user.mobile}')">${user.shopName || user.mobile}</button></td>
+    <td data-label="Address">${user.address}</td>
+    <td data-label="Pincode">${user.pincode}</td>
+    <td data-label="Delete"><button onclick="deleteShop('${user.shopId}', '${user.mobile}')">Delete</button></td>
+    <td data-label="Recharge"><button onclick="rechargeShop('${user.shopId}', '${user.mobile}')">Recharge</button></td>
+    <td data-label="Validity">${validity}</td>
+  `;
+  tbody.appendChild(tr);
+});
+}
+
+function deleteShop(shopId, shopMobile) {
+  if (shopMobile !== mobile) {
+    alert("You can only delete your own shop.");
+    return;
+  }
+
+  const validityList = JSON.parse(localStorage.getItem("validityList") || '{}');
+  const validity = validityList[shopId];
+
+  if (validity && validity.includes("Valid till: ")) {
+    const expiryStr = validity.split("Valid till: ")[1];
+    const expiryDate = new Date(expiryStr);
+    const today = new Date();
+
+    // Compare date only (ignore time)
+    const expiryDay = new Date(expiryDate.getFullYear(), expiryDate.getMonth(), expiryDate.getDate());
+    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (expiryDay >= todayDay) {
+      alert(`Cannot delete shop. Recharge is still valid till: ${expiryDate.toLocaleDateString()}`);
+      return;
+    }
+  }
+
+  if (!confirm("Are you sure you want to delete this shop?")) return;
+
+  let userList = JSON.parse(localStorage.getItem('userList') || '[]');
+  userList = userList.filter(user => user.shopId !== shopId);
+  localStorage.setItem("userList", JSON.stringify(userList));
+
+  delete validityList[shopId];
+  localStorage.setItem("validityList", JSON.stringify(validityList));
+
+  alert("Shop deleted successfully.");
+  renderShops();
+}
+
+
+   function rechargeShop(shopId, shopMobile) {
+  if (shopMobile.trim() !== mobile.trim()) {
+    alert("You can only recharge your own shop.");
+    return;
+  }
+
+  let validityList = JSON.parse(localStorage.getItem("validityList") || {});
+  const currentValidity = validityList[shopId];
+
+  let isExpired = true;
+
+  if (currentValidity && currentValidity.includes("Valid till: ")) {
+    const expiryStr = currentValidity.split("Valid till: ")[1];
+    const expiryDate = new Date(expiryStr);
+    const today = new Date();
+
+    const expiryDay = new Date(expiryDate.getFullYear(), expiryDate.getMonth(), expiryDate.getDate());
+    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    isExpired = expiryDay < todayDay;
+
+    if (!isExpired) {
+      alert(`Recharge not allowed. Valid till: ${expiryDate.toLocaleDateString()}`);
+      return;
+    }
+  }
+
+  const plan = prompt("Choose a plan:\n1. Rs. 100 - 1 Month\n2. Rs. 250 - 3 Months\n3. Rs. 450 - 6 Months\n4. Rs. 800 - 1 Year");
+  const months = { '1': 1, '2': 3, '3': 6, '4': 12 }[plan];
+
+  if (!months) {
+    alert("Invalid plan.");
+    return;
+  }
+
+  const validTill = new Date();
+  validTill.setMonth(validTill.getMonth() + months);
+  const formattedDate = validTill.toISOString();
+
+  validityList[shopId] = `Valid till: ${formattedDate}`;
+  localStorage.setItem("validityList", JSON.stringify(validityList));
+
+  alert("Recharge successful!");
+  if (!confirm(`Recharge with plan ${plan}?`)) return;
+  renderShops();
+}
+
+
+
+    function searchShops() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const userList = JSON.parse(localStorage.getItem("userList") || []);
+      const validityList = JSON.parse(localStorage.getItem("validityList") || {});
+
+      const filtered = userList.filter(user =>
+      //  user.mobile.toLowerCase().includes(query) || user.pincode.includes(query)
+		user.shopName.toLowerCase().includes(query) || user.pincode.includes(query)
+
+      );
+
+      const tbody = document.getElementById('shopTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No matching records found.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(user => {
+        const validity = validityList[user.shopId] || "Not Published";
+        let rowClass = '';
+
+        if (validity.includes("Valid till: ")) {
+          const expiry = new Date(validity.split("Valid till: ")[1]);
+          const diff = Math.ceil((expiry - new Date()) / (1000 * 60 * 60 * 24));
+          if (diff < 0) rowClass = "expired";
+          else if (diff <= 7) rowClass = "near-expiry";
+          else rowClass = "active";
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = rowClass;
+        tr.style.backgroundColor = getRandomPastelColor();
+
+        tr.innerHTML = `
+         <td data-label="Shop Name"><button onclick="onlyAdmin('${user.shopId}', '${user.mobile}')">${user.shopName || user.mobile}</button></td>
+          <td data-label="Address">${user.address}</td>
+          <td data-label="Pincode">${user.pincode}</td>
+          <td data-label="Delete"><button onclick="deleteShop('${user.shopId}', '${user.mobile}')">Delete</button></td>
+          <td data-label="Recharge"><button onclick="rechargeShop('${user.shopId}', '${user.mobile}')">Recharge</button></td>
+          <td data-label="Validity">${validity}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function onlyAdmin(shopId, shopMobile) {
+      if (shopMobile === mobile) {
+        window.location.href = `shop_vegetables.html?shopId=${shopId}`;
+      } else {
+        alert('You can only edit your own Vegetable details.');
+      }
+    }
+
+    // Initial render
+    renderShops();
+
+  </script>
+</body>
+</html>

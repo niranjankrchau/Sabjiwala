@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Order History</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    h2, h3 { margin-top: 0; }
+	 .banner {
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      position: relative;
+    }
+
+    .banner h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+    }
+
+    .banner p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .banner .btn {
+      background-color: white;
+      color: #ff6a00;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .banner .btn:hover {
+      background-color: #ffe2d1;
+      color: #d94c00;
+    }
+  </style>
+</head>
+<body>
+<div class="login-card">
+  <div class="banner">
+  <h1>Sabjiwala</h1>
+  <p>Apni Local Dukan</p>
+   </div>
+  <h2>📜 Order History for <span id="userMobile"></span></h2>
+
+  <table border="1" id="historyTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Payment</th>
+        <th>View Invoice</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <br>
+  <button onclick="goBack()">🔙 Back</button>
+
+  <script>
+    const mobile = localStorage.getItem("mobile");
+    const username = localStorage.getItem("username");
+
+    if (!mobile) {
+      alert("Please login.");
+      location.href = "indexnew.html";
+    }
+
+    document.getElementById("userMobile").textContent = mobile;
+
+    function loadOrders() {
+      const allOrders = JSON.parse(localStorage.getItem(`orders_${mobile}`) || "[]");
+      const userOrders = allOrders.filter(o => o.mobile === mobile);
+
+      const tbody = document.querySelector("#historyTable tbody");
+      tbody.innerHTML = "";
+
+      if (userOrders.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5'>No orders found.</td></tr>";
+        return;
+      }
+
+      userOrders.forEach((o, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${o.id || index + 1}</td>
+          <td>${o.date}</td>
+          <td>₹${o.total.toFixed(2)}</td>
+          <td>${o.paymentMode || 'N/A'}</td>
+          <td><button onclick='printInvoice(${JSON.stringify(o)})'>🖨</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function goBack() {
+      location.href = "customer.html";
+    }
+
+    function printInvoice(order) {
+      const win = window.open("", "", "width=800,height=600");
+      let html = `
+        <h2>🧾 Invoice - Order #${order.id || 'N/A'}</h2>
+        <p><strong>Date:</strong> ${order.date}</p>
+        <p><strong>Customer:</strong> ${order.username || 'N/A'}</p>
+        <p><strong>Mobile:</strong> ${order.mobile}</p>
+        <p><strong>Address:</strong> ${order.address}</p>
+        <p><strong>Payment:</strong> ${order.paymentMode || 'N/A'}</p>
+        <table border="1" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Name</th><th>Weight</th><th>Unit</th><th>Qty</th><th>Price</th><th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      order.items.forEach(item => {
+        const amount = item.qty * item.price;
+        html += `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.weight}</td>
+            <td>${item.unit}</td>
+            <td>${item.qty}</td>
+            <td>₹${item.price}</td>
+            <td>₹${amount.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+      html += `
+          </tbody>
+        </table>
+        <h3>Total: ₹${order.total.toFixed(2)}</h3>
+        <button onclick="window.print()">🖨 Print</button>
+      `;
+
+      win.document.write(`<html><head><title>Invoice</title></head><body>${html}</body></html>`);
+      win.document.close();
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

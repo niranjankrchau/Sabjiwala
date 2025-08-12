@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vegetables - Shop</title>
+  <style>
+   .banner {
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      position: relative;
+    }
+
+    .banner h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+    }
+
+    .banner p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .banner .btn {
+      background-color: white;
+      color: #ff6a00;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .banner .btn:hover {
+      background-color: #ffe2d1;
+      color: #d94c00;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+    }
+
+    input[type="text"] {
+      padding: 6px;
+      width: 250px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 6px 12px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 4px;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+img.veg-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  display: block;
+  margin: auto;
+}
+
+  </style>
+</head>
+<body>
+<div class="login-card">
+  <div class="banner">
+  <h1>Sabjiwala</h1>
+  <p>Apni Local Dukan</p>
+   </div>
+  <h2>Welcome, <span id="username"></span> (<span id="usermobile"></span>)</h2>
+  <h3>Vegetables from <span id="shopName"></span></h3>
+
+  <!-- Search -->
+  <input type="text" id="vegSearchInput" placeholder="Search by name or weight" />
+  <button onclick="searchVegetables()">Search</button>
+  <button onclick="renderVegetables()">Clear</button>
+
+  <table id="vegTable">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Weight</th>
+        <th>Price</th>
+        <th>Add to Cart</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Vegetables will be inserted here -->
+    </tbody>
+  </table>
+
+  <br>
+  <button onclick="viewCart()">🛒 View Cart</button>
+  <button onclick="goBack()">🔙 Back</button>
+<script>
+     const shopId = localStorage.getItem('currentShopId');
+const username = localStorage.getItem('username');
+const mobile = localStorage.getItem('mobile');
+
+/*function getShopNameFromId(id) {
+  const userList = JSON.parse(localStorage.getItem('userList') || '[]');
+  const shop = userList.find(u => u.mobile === id); // <-- match by mobile
+  return shop ? shop.shopName : 'Unknown Shop';
+}
+*/
+function getShopNameFromId(id) {
+  const userList = JSON.parse(localStorage.getItem('userList') || '[]');
+  const shop = userList.find(u => u.shopId === id); // ✅ match by shopId
+  return shop ? shop.shopName || shop.mobile : 'Unknown Shop';
+}
+
+
+if (!mobile) {
+  alert('Please login first.');
+  window.location.href = 'indexnew.html';
+}
+
+const shopName = getShopNameFromId(shopId); // ✅ This line is required!
+document.getElementById('shopName').textContent = shopName || 'Unknown Shop';
+document.getElementById('username').textContent = username || 'Guest';
+document.getElementById('usermobile').textContent = mobile || '';
+
+
+  function getVegetables() {
+  return JSON.parse(localStorage.getItem(`veg_${shopId}`) || '[]');
+}
+
+
+  function getCart() {
+    return JSON.parse(localStorage.getItem(`cart_${mobile}`) || '[]');
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(`cart_${mobile}`, JSON.stringify(cart));
+  }
+
+  function addToCart(veg) {
+    let cart = getCart();
+    const existing = cart.find(item => item.id === veg.id);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({ ...veg, qty: 1 });
+    }
+    saveCart(cart);
+    alert(`${veg.name} added to cart`);
+  }
+
+  function addToCartFromEncoded(encodedVeg) {
+    const veg = JSON.parse(decodeURIComponent(encodedVeg));
+    addToCart(veg);
+  }
+
+  function renderVegetables() {
+    const tbody = document.querySelector('#vegTable tbody');
+    tbody.innerHTML = '';
+    let vegs = getVegetables();
+
+    vegs.sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return a.weight - b.weight;
+    });
+
+    if (vegs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No vegetables available.</td></tr>';
+      return;
+    }
+
+    vegs.forEach(v => {
+      const vegStr = encodeURIComponent(JSON.stringify(v));
+      const image = v.image || 'https://via.placeholder.com/60?text=No+Image';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><img src="${image}" class="veg-img" alt="${v.name}" /></td>
+        <td>${v.name}</td>
+        <td>${v.type}</td>
+        <td>${v.weight} ${v.unit}</td>
+        <td>₹${v.price}</td>
+        <td><button onclick="addToCartFromEncoded('${vegStr}')">Add to Cart</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function searchVegetables() {
+    const query = document.getElementById('vegSearchInput').value.trim().toLowerCase();
+    const tbody = document.querySelector('#vegTable tbody');
+    tbody.innerHTML = '';
+
+    let vegs = getVegetables().filter(v =>
+      v.name.toLowerCase().includes(query) ||
+      v.weight.toString().includes(query)
+    );
+
+    vegs.sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return a.weight - b.weight;
+    });
+
+    if (vegs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No matching vegetables found.</td></tr>';
+      return;
+    }
+
+    vegs.forEach(v => {
+      const vegStr = encodeURIComponent(JSON.stringify(v));
+      const image = v.image || 'https://via.placeholder.com/60?text=No+Image';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><img src="${image}" class="veg-img" alt="${v.name}" /></td>
+        <td>${v.name}</td>
+        <td>${v.type}</td>
+        <td>${v.weight} ${v.unit}</td>
+        <td>₹${v.price}</td>
+        <td><button onclick="addToCartFromEncoded('${vegStr}')">Add to Cart</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function viewCart() {
+    window.location.href = 'cart.html';
+  }
+
+  function goBack() {
+    window.location.href = 'customer.html';
+  }
+
+  window.onload = renderVegetables;
+</script>
+</body>
+</html>

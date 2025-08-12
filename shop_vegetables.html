@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Vegetables</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+   .banner {
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      position: relative;
+    }
+
+    .banner h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+    }
+
+    .banner p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .banner .btn {
+      background-color: white;
+      color: #ff6a00;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .banner .btn:hover {
+      background-color: #ffe2d1;
+      color: #d94c00;
+    }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 5px 10px 15px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 180px;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px 10px 15px 0;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      margin-top: 20px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: #e9ecef;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    img {
+      max-width: 60px;
+      margin-top: 5px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+      input, select, button {
+        width: 100%;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        background: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      td {
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        text-align: left;
+        font-weight: bold;
+      }
+
+      th {
+        display: none;
+      }
+    }
+	.top-right {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.back-btn {
+  background-color: #007bff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background-color: #0056b3;
+}
+  </style>
+</head>
+<body>
+<div class="login-card">
+  <div class="banner">
+  <h1>Sabjiwala</h1>
+  <p>Apni Local Dukan</p>
+   </div>
+  <div class="container">
+    <h2>Vegetables for Shop: <span id="shopName"></span></h2>
+    <div class="top-right">
+     <button onclick="window.location.href='admin.html'" class="back-btn">⬅ Back to Admin</button>
+    </div>
+
+    <!-- Input Form -->
+    <input id="vegName" placeholder="Vegetable Name" />
+    <input id="vegType" placeholder="Type (e.g., Leafy, Root)" />
+    <input id="vegWeight" type="number" placeholder="Weight" />
+    <input type="file" id="vegImage" accept="image/*" />
+    
+    <select id="vegUnit">
+      <option value="">-- Unit --</option>
+      <option value="g">g</option>
+      <option value="kg">kg</option>
+      <option value="cm">cm</option>
+      <option value="meter">meter</option>
+      <option value="ml">ml</option>
+      <option value="liter">liter</option>
+      <option value="piece">piece</option>
+    </select>
+
+    <input id="vegPrice" type="number" placeholder="Price (₹)" />
+    <button onclick="addVegetable()">Add Vegetable</button>
+    <input id="searchInput" placeholder="Search by name or type..." oninput="renderVegetables()" />
+
+    <!-- Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Weight</th>
+          <th>Unit</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="vegTableBody">
+        <!-- Dynamic rows -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const shopId = params.get('shopId');
+    let editId = null;
+
+    function loadShopName() {
+      const userList = JSON.parse(localStorage.getItem('userList') || '[]');
+       const shop = userList.find(user => user.shopId === shopId);
+
+      if (shop) {
+       document.getElementById('shopName').textContent = `${shop.shopName || shop.mobile} - ${shop.address}`;
+      } else {
+        alert('Shop not found');
+        window.location.href = 'admin.html';
+      }
+    }
+
+    function getVegetables() {
+      return JSON.parse(localStorage.getItem(`veg_${shopId}`) || '[]');
+    }
+
+    function saveVegetables(vegs) {
+      localStorage.setItem(`veg_${shopId}`, JSON.stringify(vegs));
+    }
+
+    function addVegetable() {
+      const name = document.getElementById('vegName').value.trim();
+      const type = document.getElementById('vegType').value.trim();
+      const weight = parseFloat(document.getElementById('vegWeight').value);
+      const unit = document.getElementById('vegUnit').value;
+      const price = parseFloat(document.getElementById('vegPrice').value);
+
+      if (!name || !type || isNaN(weight) || !unit || isNaN(price)) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const imageInput = document.getElementById('vegImage');
+      const file = imageInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          saveVegetableEntry(name, type, weight, unit, price, e.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        saveVegetableEntry(name, type, weight, unit, price, null);
+      }
+    }
+
+    function saveVegetableEntry(name, type, weight, unit, price, image) {
+      let vegs = getVegetables();
+      if (editId) {
+        const index = vegs.findIndex(v => v.id === editId);
+        if (index !== -1) {
+          vegs[index] = { id: editId, name, type, weight, unit, price, image };
+          editId = null;
+        }
+      } else {
+        vegs.push({ id: Date.now(), name, type, weight, unit, price, image });
+      }
+
+      saveVegetables(vegs);
+      renderVegetables();
+
+      // Reset
+      document.getElementById('vegName').value = '';
+      document.getElementById('vegType').value = '';
+      document.getElementById('vegWeight').value = '';
+      document.getElementById('vegUnit').value = '';
+      document.getElementById('vegPrice').value = '';
+      document.getElementById('vegImage').value = '';
+      document.querySelector('button[onclick="addVegetable()"]').textContent = 'Add Vegetable';
+    }
+
+    function editVegetable(id) {
+      const vegs = getVegetables();
+      const veg = vegs.find(v => v.id === id);
+      if (!veg) return;
+
+      document.getElementById('vegName').value = veg.name;
+      document.getElementById('vegType').value = veg.type;
+      document.getElementById('vegWeight').value = veg.weight;
+      document.getElementById('vegUnit').value = veg.unit;
+      document.getElementById('vegPrice').value = veg.price;
+
+      editId = id;
+      document.querySelector('button[onclick="addVegetable()"]').textContent = 'Update Vegetable';
+    }
+
+    function deleteVegetable(id) {
+      let vegs = getVegetables();
+      vegs = vegs.filter(v => v.id !== id);
+      saveVegetables(vegs);
+      renderVegetables();
+    }
+
+    function renderVegetables() {
+      const tbody = document.getElementById('vegTableBody');
+      tbody.innerHTML = '';
+      const vegs = getVegetables();
+      const query = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+
+      const filteredVegs = vegs.filter(v =>
+        v.name.toLowerCase().includes(query) ||
+        v.type.toLowerCase().includes(query)
+      );
+
+      filteredVegs.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td data-label="Name">
+            ${v.name}
+            ${v.image ? `<br><img src="${v.image}" alt="${v.name}" />` : ''}
+          </td>
+          <td data-label="Type">${v.type}</td>
+          <td data-label="Weight">${v.weight}</td>
+          <td data-label="Unit">${v.unit}</td>
+          <td data-label="Price">₹${v.price}</td>
+          <td data-label="Actions">
+            <button onclick="editVegetable(${v.id})">✏️</button>
+            <button onclick="deleteVegetable(${v.id})">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Initialize
+    loadShopName();
+    renderVegetables();
+  </script>
+</body>
+</html>
