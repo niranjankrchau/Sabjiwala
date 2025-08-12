@@ -396,12 +396,16 @@ function deleteShop(shopId, shopMobile) {
   validTill.setMonth(validTill.getMonth() + months);
   const formattedDate = validTill.toISOString();
 
-  validityList[shopId] = `Valid till: ${formattedDate}`;
-  localStorage.setItem("validityList", JSON.stringify(validityList));
+  const confirmRecharge = confirm(`Recharge with plan ${plan}?`);
+if (!confirmRecharge) return;
 
-  alert("Recharge successful!");
-  if (!confirm(`Recharge with plan ${plan}?`)) return;
-  renderShops();
+// Now save
+validityList[shopId] = `Valid till: ${formattedDate}`;
+localStorage.setItem("validityList", JSON.stringify(validityList));
+
+alert("Recharge successful!");
+renderShops();
+
 }
 
 
@@ -467,4 +471,5 @@ function deleteShop(shopId, shopMobile) {
   </script>
 </body>
 </html>
+
 
