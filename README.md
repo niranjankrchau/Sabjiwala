@@ -5,6 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - Family Tree</title>
   <style>
+  .banner {
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      position: relative;
+    }
+
+    .banner h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px;
+    }
+
+    .banner p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .banner .btn {
+      background-color: white;
+      color: #ff6a00;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .banner .btn:hover {
+      background-color: #ffe2d1;
+      color: #d94c00;
+    }
     * {
       box-sizing: border-box;
     }
@@ -90,6 +125,11 @@
 </head>
 <body>
   <div class="login-card">
+  <div class="banner">
+  <h1>Sabjiwala</h1>
+  <p1>Apni Local Dukan</p1>
+   </div>
+   
     <h2>Login</h2>
 
     <label for="role">Login as:</label>
