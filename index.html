@@ -211,12 +211,13 @@ function verifyOTP() {
   localStorage.setItem('mobile', mobile); // ✅ FIXED: now it stores the value, not the input element
 
   if (role === 'Admin') {
-    window.location.href = 'admin.html';
+    window.location.href = './admin.html';
   } else {
-    window.location.href = 'customer.html';
+    window.location.href = './customer.html';
   }
 }
  </script>
 </body>
 </html>
+
 
