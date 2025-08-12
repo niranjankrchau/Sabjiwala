@@ -358,6 +358,7 @@ function deleteShop(shopId, shopMobile) {
 
 
    function rechargeShop(shopId, shopMobile) {
+	     console.log("Recharge called for:", shopId, shopMobile);
   if (shopMobile.trim() !== mobile.trim()) {
     alert("You can only recharge your own shop.");
     return;
@@ -471,6 +472,7 @@ renderShops();
   </script>
 </body>
 </html>
+
 
 
 
